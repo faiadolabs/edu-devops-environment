@@ -1,0 +1,16 @@
+version: '3'
+services:
+  jenkins:
+    container_name: jenkins-sanclemente1920
+    image: ies/jenkins
+    build:
+      context: jenkinsMyImage
+    ports:
+      - "443:8443"
+    volumes:
+      - $PWD/jenkins_home:/var/jenkins_home
+    networks:
+      - net
+  
+networks:
+  net:

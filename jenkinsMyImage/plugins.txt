@@ -1,0 +1,3 @@
+# Lista de plugins base:
+
+git:3.12.1
