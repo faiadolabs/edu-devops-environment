@@ -6,9 +6,10 @@ services:
     build:
       context: jenkinsMyImage
     ports:
+      - "9001:8080"
       - "443:8443"
     volumes:
-      - $PWD/jenkins_home:/var/jenkins_home
+      - $PWD/data:/var/jenkins_home
     networks:
       - net
   
