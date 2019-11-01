@@ -74,4 +74,10 @@ build-timeout:1.19
 mapdb-api:1.0.9.0
 
 # Mis plugins
+
+# Para crear jobs semilla y mantener más fácilmente sus hijos
 job-dsl:1.76
+
+# Para poder cambiar el idioma a Jenkins
+locale:1.4
+
