@@ -5,6 +5,12 @@
 
 FROM jenkins/jenkins:lts-alpine
 
+USER root
+RUN apk add --update maven
+USER jenkins
+
+RUN git config --global user.email "jenkins@jenkins" && git config --global user.name "Jenkins"
+
 ENV JAVA_OPTS="-Djenkins.install.runSetupWizard=false"
 
 COPY security.groovy /usr/share/jenkins/ref/init.groovy.d/security.groovy
