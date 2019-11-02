@@ -81,3 +81,5 @@ job-dsl:1.76
 # Para poder cambiar el idioma a Jenkins
 locale:1.4
 
+# Para autenticación con OAuth de Google
+google-login:1.6
