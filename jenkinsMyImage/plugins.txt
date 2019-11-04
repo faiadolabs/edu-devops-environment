@@ -83,3 +83,6 @@ locale:1.4
 
 # Para autenticación con OAuth de Google
 google-login:1.6
+
+# Integración con bitbucket para Webhooks
+bitbucket:1.1.11
