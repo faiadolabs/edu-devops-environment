@@ -1,0 +1,36 @@
+#!/bin/bash
+source $(dirname "$0")/../functions/git_functions.sh
+
+# parámetros
+rama=$1
+
+prefijo="SC1819-"
+
+# Se comprueba que existe repo git en path actual
+is_git_basedir
+if [ "$?" -ne "0" ]; then
+	exit 1
+fi
+
+# Obtener fichero de alumnos
+exist_file_alumnos
+if [ "$?" -ne "0" ]; then
+	exit 1
+fi
+fileAlumnos=.git/alumnos
+
+while read username bitbucketAccount
+do
+	echo ""
+	echo "Push repo: $username"
+	echo "-------------------------------------------------------"
+	git push $prefijo$username $1
+	echo "Generando pull request..."
+	curl -X POST -H "Content-Type: application/json" -u iessanclemente:bbpassword https://bitbucket.org/api/2.0/repositories/s3m3n/reponame/pullrequests -d '{ "title": "Actualización del README", "description": "Indicaciones sobre el versionado", "source": { "branch": { "name": "master" }, "repository": { "full_name": "a13davidpb/edu-php-mysqli-and-pdo.git" } }, "destination": { "branch": { "name": "davidPerez" } }, "reviewers": [ { "a13davidpb": "some other user needed to review changes" } ], "close_source_branch": false }'
+	
+	
+done < "$fileAlumnos"
+
+echo ""
+echo "Ok"
+exit 0

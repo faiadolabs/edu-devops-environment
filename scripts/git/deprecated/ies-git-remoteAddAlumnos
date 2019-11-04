@@ -1,0 +1,33 @@
+#!/bin/bash
+source $(dirname "$0")/../functions/git_functions.sh
+
+# Se comprueba que existe repo git en path actual
+is_git_basedir
+if [ "$?" -ne "0" ]; then
+	exit 1
+fi
+
+# Obtener fichero de alumnos
+exist_file_alumnos
+if [ "$?" -ne "0" ]; then
+	exit 1
+fi
+fileAlumnos=.git/alumnos
+
+# Obtener nombre del repo
+pathname=$PWD
+dirname=$(basename $pathname)
+repo=$dirname.git
+
+#TODO parametrización (con valor por defecto)
+prefijo="SC1819-"
+
+while read username bitbucketAccount
+do
+	#echo "Columna1: $username"
+	#echo "Columna2: $bitbucketAccount"
+	#echo "https://agrasar@bitbucket.org/$bitbucketAccount/edu-python-estructurada-problema-alumnos-y-profesores.git"
+	git remote add $prefijo$username https://iessanclemente@bitbucket.org/$bitbucketAccount/$repo
+done < "$fileAlumnos"
+
+exit 0

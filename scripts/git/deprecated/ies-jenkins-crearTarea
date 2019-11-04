@@ -1,0 +1,80 @@
+#! /bin/bash
+
+# Definición de variables (los directorios terminan SIN /)
+version="1.5"
+path_jenkins="/var/lib/jenkins"
+path_host="/var/www/dwcs"
+
+credencial_id="f3cccce5-d878-4870-a76e-8a4c0812d911"
+frecuencia="@hourly"
+
+if test "$#" -ne 4; then
+	printf "\nNo hay suficientes parámetros. Usa: \n\t\t$0 [alumnos-CD|alumnos-DWCS] <prefijo-tarea> <id-tarea> <repo-name>\n\n"
+	printf "Ejemplo: \t$0 alumnos dwcs t01 edu-php-introphp.git\n\n"
+
+	exit 1
+fi
+
+prefijo=$2
+tarea=$3
+fileAlumnos=$1
+path_repo=$4
+
+umask 007
+while read username bitbucketAccount
+do
+echo -e "Configurando proyecto para $username:"
+mkdir -p $path_jenkins/jobs/$prefijo-$tarea-$username
+cat > $path_jenkins/jobs/$prefijo-$tarea-$username/config.xml <<-EOF
+<?xml version='1.1' encoding='UTF-8'?>
+<project>
+  <actions/>
+  <description>Tarea generada a partir del script $0 en su versión $version</description>
+  <keepDependencies>false$path</keepDependencies>
+  <properties/>
+  <scm class="hudson.plugins.git.GitSCM" plugin="git@3.9.1">
+    <configVersion>2</configVersion>
+    <userRemoteConfigs>
+      <hudson.plugins.git.UserRemoteConfig>
+        <url>git@bitbucket.org:$bitbucketAccount/$path_repo</url>
+        <credentialsId>$credencial_id</credentialsId>
+      </hudson.plugins.git.UserRemoteConfig>
+    </userRemoteConfigs>
+    <branches>
+      <hudson.plugins.git.BranchSpec>
+        <name>*/$username</name>
+      </hudson.plugins.git.BranchSpec>
+    </branches>
+    <doGenerateSubmoduleConfigurations>false</doGenerateSubmoduleConfigurations>
+    <submoduleCfg class="list"/>
+    <extensions/>
+  </scm>
+  <canRoam>true</canRoam>
+  <disabled>false</disabled>
+  <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
+  <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+  <triggers>
+    <hudson.triggers.SCMTrigger>
+      <spec>$frecuencia</spec>
+      <ignorePostCommitHooks>false</ignorePostCommitHooks>
+    </hudson.triggers.SCMTrigger>
+  </triggers>
+  <concurrentBuild>false</concurrentBuild>
+  <builders/>
+  <publishers/>
+  <buildWrappers/>
+</project>
+EOF
+echo -e "\tCreado fichero $path_jenkins/jobs/$prefijo-$tarea-$username/config.xml"
+mkdir -p $path_host/$prefijo-$username
+# La salida de errores la redirijo a null y no la capturo: https://stackoverflow.com/questions/2292847/how-to-silence-output-in-a-bash-script
+ln -s $path_jenkins/workspace/$prefijo-$tarea-$username $path_host/$prefijo-$username/$tarea 2> /dev/null
+exito=$?
+if [ $exito -eq 0 ];then
+	echo -e "\tCreado enlace de la tarea en virtual host: $path_host/$prefijo-$username/$tarea"
+else
+	echo -e "\tEnlace ya existente: $path_host/$username/$tarea"
+fi
+done < "$fileAlumnos"
+echo -e "\nTerminado ok"
+exit 0
