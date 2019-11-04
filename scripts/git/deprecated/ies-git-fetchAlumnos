@@ -1,0 +1,34 @@
+#!/bin/bash
+source $(dirname "$0")/../functions/git_functions.sh
+
+prefijo="SC1819-"
+
+# Se comprueba que existe repo git en path actual
+is_git_basedir
+if [ "$?" -ne "0" ]; then
+	exit 1
+fi
+
+# Obtener fichero de alumnos
+exist_file_alumnos
+if [ "$?" -ne "0" ]; then
+	exit 1
+fi
+fileAlumnos=.git/alumnos
+
+while read username bitbucketAccount
+do
+	echo ""
+	echo "Actualizando repo: $username"
+	echo "-------------------------------------------------------"
+	if [ "$#" == 1 ]; then
+		git fetch $prefijo$username $1
+	else
+		git fetch $prefijo$username $username
+	fi
+	
+done < "$fileAlumnos"
+
+echo ""
+echo "Ok"
+exit 0

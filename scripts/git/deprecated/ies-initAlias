@@ -1,0 +1,6 @@
+#!/bin/bash
+
+#From: https://stackoverflow.com/questions/2197461/how-to-set-an-alias-inside-a-bash-shell-script-so-that-is-it-visible-from-the-ou
+shopt -s expand_aliases
+
+alias ies_obtenerRamasPrincipales='../../ies-sanclemente1819/fetchAlumnos'

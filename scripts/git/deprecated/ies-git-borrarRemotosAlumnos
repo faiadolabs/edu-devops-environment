@@ -1,0 +1,19 @@
+#!/bin/bash
+
+prefijo="SC1819-"
+#path_script=${0%/*}
+#echo "pathScript: $pathScript"
+#TODO: Comprobar si existe el file
+fileAlumnos=.git/alumnos
+
+while read username bitbucketAccount
+do
+	echo ""
+	echo "Borrando remoto: $username"
+	echo "-------------------------------------------------------"
+	git remote remove $prefijo$username
+done < "$fileAlumnos"
+
+echo ""
+echo "Ok"
+exit 0
