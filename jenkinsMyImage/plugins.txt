@@ -89,3 +89,6 @@ bitbucket:1.1.11
 
 # Autorización para jenkins por roles
 role-strategy:2.15
+
+# Para ejecutar un script después del build (usado en dsl)
+postbuildscript:2.9.0
