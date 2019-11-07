@@ -93,3 +93,5 @@ role-strategy:2.15
 # Poder ejecutar en Jobs systemGroovyCommand (para poder p.e. buscar el último job success)
 groovy:2.2
 
+# Para ejecutar un script después del build (usado en dsl)
+postbuildscript:2.9.0
