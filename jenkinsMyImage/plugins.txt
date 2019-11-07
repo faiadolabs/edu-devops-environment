@@ -89,3 +89,7 @@ bitbucket:1.1.11
 
 # Autorización para jenkins por roles
 role-strategy:2.15
+
+# Poder ejecutar en Jobs systemGroovyCommand (para poder p.e. buscar el último job success)
+groovy:2.2
+
