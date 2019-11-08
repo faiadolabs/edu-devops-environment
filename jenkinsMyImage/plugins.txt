@@ -95,3 +95,11 @@ groovy:2.2
 
 # Para ejecutar un script después del build (usado en dsl)
 postbuildscript:2.9.0
+
+# Permite hacer pasos previos antes de que el job compruebe si hay cambios nuevos en el repo antes de comenzar el build
+preSCMbuildstep:0.3
+
+# Para inyectar variables de entorno en un job. Evitar variables "sensibles"
+# Leer esta nota de seguridad (https://jenkins.io/security/advisory/2018-02-26/#SECURITY-248)
+# No debería suponer ningún riesgo conociendo los Warnings de seguridad previos
+envinject:2.3.0
