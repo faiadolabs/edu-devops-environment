@@ -18,12 +18,7 @@ RUN apk add --update maven
 
 # https://wiki.alpinelinux.org/wiki/Docker
 # https://stackoverflow.com/questions/39460085/docker-alpine-images-basic-commands-are-not-working
-RUN apk add docker && apk add openrc
-
-# To start the Docker daemon at boot, run
-RUN mkdir -p /run/openrc/ \
-    && touch /run/openrc/softlevel \
-    && rc-update add docker boot
+RUN apk add docker
 
 # Permitir al user jenkins utilizar docker
 RUN addgroup jenkins docker && addgroup jenkins root
