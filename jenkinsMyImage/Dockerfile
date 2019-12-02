@@ -5,10 +5,35 @@
 
 FROM jenkins/jenkins:lts-alpine
 
-USER root
-RUN apk add --update maven
-USER jenkins
+ARG	timezone=Europe/Madrid
+ENV	TZ $timezone
 
+USER root
+
+# Change timezone
+#RUN	echo $timezone > /etc/timezone \
+#	&& cp /usr/share/zoneinfo/$timezone /etc/localtime
+
+RUN apk add --update maven
+
+# https://wiki.alpinelinux.org/wiki/Docker
+# https://stackoverflow.com/questions/39460085/docker-alpine-images-basic-commands-are-not-working
+RUN apk add docker && apk add openrc
+
+# To start the Docker daemon at boot, run
+RUN mkdir -p /run/openrc/ \
+    && touch /run/openrc/softlevel \
+    && rc-update add docker boot
+
+# Permitir al user jenkins utilizar docker
+RUN addgroup jenkins docker && addgroup jenkins root
+
+# Install docker composer
+# RUN apk add py-pip && apk add python-dev libffi-dev openssl-dev gcc libc-dev make
+
+# RUN pip install docker-compose
+
+USER jenkins
 RUN git config --global user.email "jenkins@jenkins" && git config --global user.name "Jenkins"
 
 ENV JAVA_OPTS="-Djenkins.install.runSetupWizard=false"
