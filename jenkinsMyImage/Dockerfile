@@ -28,8 +28,8 @@ RUN addgroup jenkins docker && addgroup jenkins root
 
 # RUN pip install docker-compose
 
+COPY gitconfig /etc/gitconfig
 USER jenkins
-RUN git config --global user.email "jenkins@jenkins" && git config --global user.name "Jenkins"
 
 ENV JAVA_OPTS="-Djenkins.install.runSetupWizard=false"
 
