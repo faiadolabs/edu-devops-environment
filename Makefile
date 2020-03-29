@@ -15,7 +15,7 @@ help: ## Show this help message
 	@egrep '^(.+)\:\ ##\ (.+)' ${MAKEFILE_LIST} | column -t -c 2 -s ':#'
 	@echo
 
-run-jenkins: ## Start the deployments containers PRODUCTION JENKINS VERSION (Detached)
+jenkins-run: ## Start the deployments containers PRODUCTION JENKINS VERSION (Detached)
 	U_ID=${UID} docker-compose -f jenkins/docker-compose.yml up -d
 	@echo
 	@echo '-------------------------------------------------'
@@ -23,15 +23,26 @@ run-jenkins: ## Start the deployments containers PRODUCTION JENKINS VERSION (Det
 	@echo '-------------------------------------------------'
 	@echo
 
-run-jenkins-sandbox: ## Start the deployments containers DEMO JENKINS VERSION (Detached)
+jenkins-stop: ## Stop PRODUCTION JENKINS VERSION 
+	U_ID=${UID} docker-compose -f jenkins/docker-compose.yml down
+
+jenkins-build: ## Build DEMO JENKINS VERSION
+	U_ID=${UID} docker-compose -f jenkins/docker-compose.yml build
+
+jenkins-upgrade: ##
+	docker pull jenkins/jenkins:lts-alpine
+
+
+jenkins-sandbox-run: ## Start the deployments containers DEMO JENKINS VERSION (Detached)
+	U_ID=${UID} docker-compose -f jenkins/docker-compose-sandbox.yml up -d
 	@echo
 	@echo '-------------------------------------------------'
 	@echo 'Conéctate a Jenkins en http://localhost:9001'
 	@echo '-------------------------------------------------'
 	@echo
 
-stop-jenkins: ## Stop PRODUCTION JENKINS VERSION 
-	U_ID=${UID} docker-compose -f jenkins/docker-compose.yml down
+jenkins-sandbox-stop: ## Stop DEMO JENKINS VERSION
+	U_ID=${UID} docker-compose -f jenkins/docker-compose-sandbox.yml down
 
-stop-jenkins-sandbox: ## Stop DEMO JENKINS VERSION
-	U_ID=${UID} docker-compose -f jenkins/docker-compose.yml down
+jenkins-sandbox-build: ## Build DEMO JENKINS VERSION
+	U_ID=${UID} docker-compose -f jenkins/docker-compose-sandbox.yml build
