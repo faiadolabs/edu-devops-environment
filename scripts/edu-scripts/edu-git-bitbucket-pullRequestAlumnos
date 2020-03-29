@@ -23,9 +23,12 @@ fileAlumnos=.git/alumnos
 ####################################################################
 exist_file $HOME/.netrc
 if [ "$?" -ne "0" ]; then
-	userAccount=$(read_user_input "Bitbucket username")
-	userPassword=$(read_user_password)
+	read_user_input "Bitbucket username"
+	userAccount=$read_user_input_response
+	echo -n "Password: "
+	read -s userPassword
 	loginParam="-u $userAccount:$userPassword"
+	echo -ne "\n"
 else
 	loginParam="--netrc"
 fi
@@ -33,6 +36,7 @@ fi
 ####################################################################
 # PARÁMETROS DEL PULL REQUEST
 ####################################################################
+echo -ne "\n"
 read_user_input "Título Pull Request" "Actualización del Enunciado"
 pullRequestTitle=$read_user_input_response
 read_user_input "Source Branch" "master-updated"
@@ -40,53 +44,70 @@ pullRequestSourceBranch=$read_user_input_response
 read_user_input "Destination Branch" "master"
 pullRequestDestinationBranch=$read_user_input_response
 
+####################################################################
+# POR CADA ALUMNO
+####################################################################
 while read alumnoUsername bitbucketAccount prefijoName sufijoRepo
 do
+	echo -ne "\n"
     # Hacer un trim de las cadenas (https://stackoverflow.com/a/19347380/1820838)
     alumnoUsername=${alumnoUsername//[$'\t\r\n']}
-    bitbucketAccount=${bitbucketAccount//[$'\t\r\n']}
+    bitbucketAccountAlu=${bitbucketAccount//[$'\t\r\n']}
 	bitbucketAccountProf=iessanclemente
 
     prefijoName=${prefijoName//[$'\t\r\n']}
-	sufijoRepo${sufijoRepo//[$'\t\r\n']}
+	sufijoRepo=${sufijoRepo//[$'\t\r\n']}
 
-	# repositorio
-	repoProf=${PWD##*/} # Se toma el nombre local del repo por el directorio actual
-	repoNameAlumno=$repoProf$sufijoRepo
+	# repositorio: Se toma el nombre local del repo por el directorio actual
+	repoProf=${PWD##*/} # 
 
-	# Por el momento utilizo:
-	curl -v https://api.bitbucket.org/2.0/repositories/$bitbucketAccountProf/$repoNameAlumno/pullrequests \
-		$loginParam \
-		--request POST \
-		--header 'Content-Type: application/json' \
-		--data "{
-			'title': '$pullRequestTitle',
-			'source': {
-				'branch': {
-					'name': '$pullRequestSourceBranch'
-				}
-			},
-			'destination': { 
-				'branch': { 
-					'name': '$pullRequestDestinationBranch' 
-				}
-			},
-			'reviewers': [ 
-				{ 'username': '$alumnoUsername' }
-			],
-			'close_source_branch': true
-		}"
-	CODE_CURL=$? # recupero la salida de la llamada a la API REST
+	# repositorio del alumno: se concatena el sufijo del repo sacándole la extensión .git
+	# https://en.wikipedia.org/wiki/Cut_(Unix)
+	repoNameAlumno=$(echo "$repoProf$sufijoRepo" | cut -d "." -f1) 
+	remoteRefAlumno=$prefijoName$alumnoUsername
 
-	if [ "$CODE_FETCH" == 0 ]; then
-		# Correcto
-		echo -ne "${ok}\tCreado pull request para $alumnoUsername\n"
+	# push de rama de actualización en repo alumno
+	git push $remoteRefAlumno $pullRequestDestinationBranch:$pullRequestSourceBranch >/dev/null 2>&1
+	CODE_PUSH=$? # recupero la salida del fetch
+	if [ "$CODE_PUSH" == 0 ]; then
+		echo -ne "${ok}\tpush $remoteRefAlumno $pullRequestSourceBranch:$pullRequestDestinationBranch\n"
+	
+		# Por genero el pull request por API REST:
+		CODE_CURL=$(curl -s https://api.bitbucket.org/2.0/repositories/$bitbucketAccountProf/$repoNameAlumno/pullrequests \
+			$loginParam \
+			--output /dev/null \
+			--write-out "%{http_code}" \
+			--request POST \
+			--header 'Content-Type: application/json' \
+			--data "{
+				\"title\": \"$pullRequestTitle\",
+				\"source\": {
+					\"branch\": {
+						\"name\": \"$pullRequestSourceBranch\"
+					}
+				},
+				\"destination\": { 
+					\"branch\": { 
+						\"name\": \"$pullRequestDestinationBranch\" 
+					}
+				},
+				\"reviewers\": [ 
+						{ \"username\": \"$bitbucketAccountAlu\" }
+					],
+				\"close_source_branch\": true
+			}"
+		)
+		if [ "$CODE_CURL" == 200 ] || [ "$CODE_CURL" == 201 ] || [ "$CODE_CURL" == 202 ]; then
+			# Correcto
+			echo -ne "${ok}\tCreado pull request para $alumnoUsername\n"
+		else
+			# Error
+			echo -ne "${fallo}NO se ha creado el pull request para $alumnoUsername.\n"
+		fi
 	else
-		# Error
-		echo -ne "${fallo}\tNO se ha creado el pull request para $alumnoUsername. ${red}Abortando...${default}\n"
-		exit -1 
+		echo -ne "${fallo}push $remoteRefAlumno $pullRequestSourceBranch:$pullRequestDestinationBranch"
 	fi
 	
 done < "$fileAlumnos"
-
+echo -ne "\n${completado}\n\n"
 exit 0

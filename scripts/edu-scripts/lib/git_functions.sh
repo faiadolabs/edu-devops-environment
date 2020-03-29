@@ -5,10 +5,12 @@
 green='\033[32m'
 red='\033[31m'
 blue='\033[34m'
+yellow='\033[33m'
 default='\033[39m' # Default Color
 
 ok="${green}[OK]${default} "
 fallo="${red}[FALLO]${default} "
+completado="${green}Completado.${default} "
 
 is_git_basedir(){
 	if [ ! -d ".git" ]; then
@@ -45,9 +47,9 @@ read_user_input(){
 	while [ -z "$read_user_input_response" ]
 	do
 		if [ -n "$2" ]; then
-			echo -n "$1 [$2]: "
+			echo -ne "${blue}$1 ${yellow}[$2]${yellow}: ${default}"
 		else
-			echo -n "$1: "
+			echo -ne "${blue}$1: ${default}"
 		fi
 		read read_user_input_response
 		#if [ "$read_user_input_response" = "" ]; then
@@ -56,10 +58,4 @@ read_user_input(){
 			return 0
 		fi
 	done
-}
-
-read_user_password(){
-	echo "password: "
-	read -s password
-	return password
 }
