@@ -1,7 +1,7 @@
 version: '3'
 services:
   jenkins:
-    container_name: jenkins
+    container_name: jenkins-edu
     image: eduxunta/jenkins
     build:
       context: jenkinsMyImage-production
