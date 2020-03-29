@@ -1,0 +1,20 @@
+#!/bin/bash
+
+prefijo=$1
+#path_script=${0%/*}
+#echo "pathScript: $pathScript"
+#TODO: Comprobar si existe el file
+fileAlumnos=.git/alumnos
+
+while read username bitbucketAccount prefijoName sufijoRepo
+do
+	# Hacer un trim de las cadenas (https://stackoverflow.com/a/19347380/1820838)
+    username=${username//[$'\t\r\n']}
+    prefijoName=${prefijoName//[$'\t\r\n']}
+
+	echo -ne "[Borrando...] remoto: $prefijoName$username \n"
+	git remote remove $prefijoName$username
+
+done < "$fileAlumnos"
+
+exit 0

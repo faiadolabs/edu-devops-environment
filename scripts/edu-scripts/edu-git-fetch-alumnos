@@ -1,0 +1,70 @@
+#!/bin/bash
+source $(dirname "$0")/lib/git_functions.sh
+
+# TODO: Documentarlo: Especifica el nombre de la rama del alumno EN REMOTO 
+PARAM_BRANCH_REMOTE=$1
+
+# Se comprueba que existe repo git en path actual
+is_git_basedir
+if [ "$?" -ne "0" ]; then
+	exit 1
+fi
+
+# Obtener fichero de alumnos
+# IMPROVE: Si el fichero de alumnos no existe, sigiere los disponibles y automatiza la copia
+exist_file_alumnos
+if [ "$?" -ne "0" ]; then
+	exit 1
+fi
+fileAlumnos=.git/alumnos
+
+while read username bitbucketAccount prefijoName sufijoRepo
+do
+    # Hacer un trim de las cadenas (https://stackoverflow.com/a/19347380/1820838)
+    username=${username//[$'\t\r\n']}
+    bitbucketAccount=${bitbucketAccount//[$'\t\r\n']}
+
+    prefijoName=${prefijoName//[$'\t\r\n']}
+
+	if [ "$#" == 1 ]; then
+		# Crea un nombre para la rama LOCAL y la trackea si no existe
+		branchLocalName="$(echo $prefijoName'rb'-$username'-'$PARAM_BRANCH_REMOTE)"
+		branchRemoteName=$PARAM_BRANCH_REMOTE
+
+	else
+		# Crea un nombre para la rama LOCAL y la trackea si no existe
+		branchLocalName="$(echo $prefijoName'rb'-$username)"
+		branchRemoteName="$(echo 'rb'-$username)"
+	fi
+
+	# TODO: Salida muy extraña
+	# OUTPUT=$(git fetch -v $prefijoName$username rb-$username 2>&1 >/dev/null)
+	# OUTPUT="$(git fetch $prefijoName$username rb-$username)"
+	# cuento el número de lineas de la salida
+	# NUM="$(echo $OUTPUT | wc -l)"
+
+	# Por el momento utilizo:
+	git fetch -v $prefijoName$username $branchRemoteName >/dev/null 2>&1
+	CODE_FETCH=$? # recupero la salida del fetch
+
+	if [ "$CODE_FETCH" == 0 ]; then
+		# Correcto
+
+		# Crea una rama LOCAL y la trackea si no existe
+		git branch -t $branchLocalName $prefijoName$username/$branchRemoteName >/dev/null 2>&1
+		CODE_BRANCH=$?
+		# echo "branch -t $branchLocalName $prefijoName$username/$branchRemoteName"
+		if [ "$CODE_BRANCH" == 0 ]; then
+			nuevaRama="[\033[32mNEW_BRANCH\033[0m]"
+		fi
+
+		# LINEA="$(echo -e $OUTPUT | sed -n '2p')"
+		echo -ne "\033[32m[LOAD]\033[0m\tgit fetch -v $prefijoName$username $branchRemoteName $nuevaRama\n"
+	else
+		# Error
+		echo -ne "\033[91m[FAIL]\033[0m\tgit fetch -v $prefijoName$username $branchRemoteName\n" 
+	fi
+	
+done < "$fileAlumnos"
+
+exit 0

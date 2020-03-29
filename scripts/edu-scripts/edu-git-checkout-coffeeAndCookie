@@ -1,0 +1,58 @@
+#!/bin/bash
+source $(dirname "$0")/lib/git_functions.sh
+
+# TODO: Documentarlo: Especifica el nombre de la rama del alumno LOCAL a ARCHIVAR 
+# (puede haber varias ramas del alumno pero se forman de la misma manera con sufijos) 
+PARAM_DELAY=$1
+
+# Se comprueba si se pasan los segundos entre checkout y checkout
+if [ "$#" -ne "1" ]; then
+	echo -ne "\nModo ☕ 🍪 ...\n\n"
+	echo -ne "Usa: edu-git-checkout-coffeeAndCookie <segundos>\n\n"
+	exit 1
+fi
+
+# Se comprueba que existe repo git en path actual
+is_git_basedir
+if [ "$?" -ne "0" ]; then
+	exit 1
+fi
+
+# Obtener fichero de alumnos
+# IMPROVE: Si el fichero de alumnos no existe, sigiere los disponibles y automatiza la copia
+exist_file_alumnos
+if [ "$?" -ne "0" ]; then
+	exit 1
+fi
+fileAlumnos=.git/alumnos
+
+echo -ne "\nModo ☕ 🍪...\n\n"
+
+while read username bitbucketAccount prefijoName sufijoRepo
+do
+    # Hacer un trim de las cadenas (https://stackoverflow.com/a/19347380/1820838)
+    username=${username//[$'\t\r\n']}
+    bitbucketAccount=${bitbucketAccount//[$'\t\r\n']}
+    prefijoName=${prefijoName//[$'\t\r\n']}
+
+	# Conforma el nombre (ESTANDAR) de las ramas locales
+	branchLocalName="$(echo $prefijoName'rb'-$username)"
+
+	# hago el push efectivo
+	git checkout $branchLocalName >/dev/null 2>&1
+	CODE_CHECKOUT=$? # recupero la salida del checkout
+
+	if [ "$CODE_CHECKOUT" == 0 ]; then
+		# Correcto
+		# LINEA="$(echo -e $OUTPUT | sed -n '2p')"
+		echo -ne "\033[32m[REVISANDO...]\033[0m\tgit checkout $branchLocalName\n"
+
+		sleep $PARAM_DELAY
+	else
+		# Error
+		echo -ne "\033[91m[FAILED]\033[0m\tgit checkout $branchLocalName\n" 
+	fi
+	
+done < "$fileAlumnos"
+
+exit 0

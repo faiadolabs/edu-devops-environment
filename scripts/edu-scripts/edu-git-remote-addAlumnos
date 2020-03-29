@@ -1,0 +1,45 @@
+#!/bin/bash
+source $(dirname "$0")/lib/git_functions.sh
+
+# Se comprueba que existe repo git en path actual
+is_git_basedir
+if [ "$?" -ne "0" ]; then
+	exit 1
+fi
+
+# Obtener fichero de alumnos
+exist_file_alumnos
+if [ "$?" -ne "0" ]; then
+	exit 1
+fi
+fileAlumnos=.git/alumnos
+
+# Obtener nombre del repo
+pathname=$PWD
+dirname=$(basename $pathname)
+
+while read username bitbucketAccount prefijoName sufijoRepo
+do
+    # Hacer un trim de las cadenas (https://stackoverflow.com/a/19347380/1820838)
+    username=${username//[$'\t\r\n']}
+    bitbucketAccount=${bitbucketAccount//[$'\t\r\n']}
+
+    prefijoName=${prefijoName//[$'\t\r\n']}
+    sufijoRepo=${sufijoRepo//[$'\t\r\n']}
+
+    repo=$dirname$sufijoRepo
+
+	# echo "---"
+    # echo "Columna1: =$username="
+	# echo "Columna2: =$bitbucketAccount="
+    
+	# (TODO: problema multiples keys. https://stackoverflow.com/questions/2419566/best-way-to-use-multiple-ssh-private-keys-on-one-client) 
+    # echo "git@bitbucket.org:$bitbucketAccount/$repo"
+    # git remote add $prefijoName$username git@bitbucket.org:$bitbucketAccount/$repo
+
+    echo -ne "[Creando...] remoto: $prefijoName$username \n"
+    git remote add $prefijoName$username https://iessanclemente@bitbucket.org/$bitbucketAccount/$repo
+
+done < "$fileAlumnos"
+
+exit 0

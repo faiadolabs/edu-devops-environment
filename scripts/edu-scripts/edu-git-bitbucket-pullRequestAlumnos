@@ -1,0 +1,92 @@
+#!/bin/bash
+source $(dirname "$0")/lib/git_functions.sh
+
+# TODO: Documentarlo: Especifica el nombre de la rama del alumno EN REMOTO 
+PARAM_BRANCH_REMOTE=$1
+
+# Se comprueba que existe repo git en path actual
+is_git_basedir
+if [ "$?" -ne "0" ]; then
+	exit 1
+fi
+
+# Obtener fichero de alumnos
+# IMPROVE: Si el fichero de alumnos no existe, sigiere los disponibles y automatiza la copia
+exist_file_alumnos
+if [ "$?" -ne "0" ]; then
+	exit 1
+fi
+fileAlumnos=.git/alumnos
+
+####################################################################
+# Compruebo si tengo las credenciasles en .netrc
+####################################################################
+exist_file $HOME/.netrc
+if [ "$?" -ne "0" ]; then
+	userAccount=$(read_user_input "Bitbucket username")
+	userPassword=$(read_user_password)
+	loginParam="-u $userAccount:$userPassword"
+else
+	loginParam="--netrc"
+fi
+
+####################################################################
+# PARÁMETROS DEL PULL REQUEST
+####################################################################
+read_user_input "Título Pull Request" "Actualización del Enunciado"
+pullRequestTitle=$read_user_input_response
+read_user_input "Source Branch" "master-updated"
+pullRequestSourceBranch=$read_user_input_response
+read_user_input "Destination Branch" "master"
+pullRequestDestinationBranch=$read_user_input_response
+
+while read alumnoUsername bitbucketAccount prefijoName sufijoRepo
+do
+    # Hacer un trim de las cadenas (https://stackoverflow.com/a/19347380/1820838)
+    alumnoUsername=${alumnoUsername//[$'\t\r\n']}
+    bitbucketAccount=${bitbucketAccount//[$'\t\r\n']}
+	bitbucketAccountProf=iessanclemente
+
+    prefijoName=${prefijoName//[$'\t\r\n']}
+	sufijoRepo${sufijoRepo//[$'\t\r\n']}
+
+	# repositorio
+	repoProf=${PWD##*/} # Se toma el nombre local del repo por el directorio actual
+	repoNameAlumno=$repoProf$sufijoRepo
+
+	# Por el momento utilizo:
+	curl -v https://api.bitbucket.org/2.0/repositories/$bitbucketAccountProf/$repoNameAlumno/pullrequests \
+		$loginParam \
+		--request POST \
+		--header 'Content-Type: application/json' \
+		--data "{
+			'title': '$pullRequestTitle',
+			'source': {
+				'branch': {
+					'name': '$pullRequestSourceBranch'
+				}
+			},
+			'destination': { 
+				'branch': { 
+					'name': '$pullRequestDestinationBranch' 
+				}
+			},
+			'reviewers': [ 
+				{ 'username': '$alumnoUsername' }
+			],
+			'close_source_branch': true
+		}"
+	CODE_CURL=$? # recupero la salida de la llamada a la API REST
+
+	if [ "$CODE_FETCH" == 0 ]; then
+		# Correcto
+		echo -ne "${ok}\tCreado pull request para $alumnoUsername\n"
+	else
+		# Error
+		echo -ne "${fallo}\tNO se ha creado el pull request para $alumnoUsername. ${red}Abortando...${default}\n"
+		exit -1 
+	fi
+	
+done < "$fileAlumnos"
+
+exit 0
