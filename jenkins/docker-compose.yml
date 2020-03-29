@@ -1,0 +1,24 @@
+version: '3'
+services:
+  jenkins:
+    container_name: jenkins
+    image: eduxunta/jenkins
+    build:
+      context: jenkinsMyImage-production
+    ports:
+      - "127.0.0.1:8080:8080"
+      - "443:8443"
+    volumes:
+      - $PWD/jenkins-home:/var/jenkins_home
+      # Para emplear docker desde el container de jenkins:lts-alpine
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - net
+    deploy:
+      resources:
+        limits:
+          cpus: '0.8'
+          memory: 1250M
+  
+networks:
+  net:
