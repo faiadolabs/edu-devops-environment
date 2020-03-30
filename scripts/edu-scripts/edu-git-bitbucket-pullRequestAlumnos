@@ -70,10 +70,10 @@ do
 	git push $remoteRefAlumno $pullRequestDestinationBranch:$pullRequestSourceBranch >/dev/null 2>&1
 	CODE_PUSH=$? # recupero la salida del fetch
 	if [ "$CODE_PUSH" == 0 ]; then
-		echo -ne "${ok}\tpush $remoteRefAlumno $pullRequestSourceBranch:$pullRequestDestinationBranch\n"
+		echo -ne "${ok}\tgit push $remoteRefAlumno $pullRequestDestinationBranch:$pullRequestSourceBranch\n"
 	
 		# Por genero el pull request por API REST:
-		CODE_CURL=$(curl -s https://api.bitbucket.org/2.0/repositories/$bitbucketAccountProf/$repoNameAlumno/pullrequests \
+		CODE_CURL=$(curl -s https://api.bitbucket.org/2.0/repositories/$bitbucketAccountAlu/$repoNameAlumno/pullrequests \
 			$loginParam \
 			--output /dev/null \
 			--write-out "%{http_code}" \
@@ -105,7 +105,7 @@ do
 			echo -ne "${fallo}NO se ha creado el pull request para $alumnoUsername.\n"
 		fi
 	else
-		echo -ne "${fallo}push $remoteRefAlumno $pullRequestSourceBranch:$pullRequestDestinationBranch"
+		echo -ne "${fallo}git push $remoteRefAlumno $pullRequestDestinationBranch:$pullRequestSourceBranch\n"
 	fi
 	
 done < "$fileAlumnos"
