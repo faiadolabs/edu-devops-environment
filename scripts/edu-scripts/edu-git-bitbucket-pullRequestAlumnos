@@ -72,7 +72,7 @@ do
 	if [ "$CODE_PUSH" == 0 ]; then
 		echo -ne "${ok}\tgit push $remoteRefAlumno $pullRequestDestinationBranch:$pullRequestSourceBranch\n"
 	
-		# Por genero el pull request por API REST:
+		# Por genero el pull request por API REST (CUIDADO!! es CASE-SENSITIVE. Asegurarse que los usernames sean correctos):
 		CODE_CURL=$(curl -s https://api.bitbucket.org/2.0/repositories/$bitbucketAccountAlu/$repoNameAlumno/pullrequests \
 			$loginParam \
 			--output /dev/null \
