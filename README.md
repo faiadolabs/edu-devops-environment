@@ -6,7 +6,7 @@
 
 **Montar un entorno de entrega y compartición de actividades Profesores-Alumnos con GIT y un entorno CI/CD** (para automatizar la corrección de las prácticas de los alumnos).
 
-Para esto se implementa un [esquema de compartición](wiki/Git-0-RecepcionActividadesGit.md) de actividades entre alumnos e instructor con GIT y una herramienta de integración continua como Jenkins, todo ello descrito en [la documentación](wiki/Home.md).
+Para esto se implementa un [esquema de compartición](wiki/Git-0-RecepcionActividadesGit.md) de actividades entre alumnos e instructor con GIT y una herramienta de integración continua como Jenkins, todo ello descrito en [la documentación](https://bitbucket.org/eduxunta/edu-devops-environment/wiki/Home).
 
 ## Pre-requisitos
 
@@ -42,7 +42,7 @@ jenkins-sandbox-build      Build DEMO JENKINS VERSION
 
 ## Scripts de Edu-Git
 
-Incluir en el *PATH del sistema*, la carpeta `scripts/edu-scripts/`, para poder utilizarlos tal y como se refleja en [la documentación](wiki/Home.md).
+Incluir en el *PATH del sistema*, la carpeta `scripts/edu-scripts/`, para poder utilizarlos tal y como se refleja en [la documentación](https://bitbucket.org/eduxunta/edu-devops-environment/wiki/Home).
 
 ## Entorno estable
 
@@ -90,4 +90,4 @@ El software de este repo es libre publicado bajo los términos de GNU Free Docum
 
 Este programa se distribuye con la esperanza de que sea útil, pero **SIN NINGUNA GARANTÍA**; sin siquiera la garantía implícita de comercialidad o aptitud para un propósito en particular. Ver el Licencia pública general de GNU para más detalles.
 
-[La documentación](wiki/Home.md) es publicada bajo los términos de GNU Free Documentation License Version 1.3, lee el fichero [LICENSE](wiki/LICENSE) en la wiki.
+[La documentación](https://bitbucket.org/eduxunta/edu-devops-environment/wiki/Home) es publicada bajo los términos de GNU Free Documentation License Version 1.3, lee el fichero [LICENSE](https://bitbucket.org/eduxunta/edu-devops-environment/wiki/LICENSE) en la wiki.
