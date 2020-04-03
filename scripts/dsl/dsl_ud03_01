@@ -1,0 +1,176 @@
+def alumnos = readFileFromWorkspace('SC1920-PSP-alumnos')
+alumnos.eachLine { line ->
+
+    // Realizo la creación de jobs hasta que encuentro una línea vacía
+    if(line.length() == 0) return;
+
+    println 'Procesando esta línea: ' + line;
+    def linea = line.split();
+    def nombreAlumno = linea[0];
+    def idAlumno = linea[1];
+
+    job("psp-ud03-01-${nombreAlumno}") {
+        environmentVariables(NOMBRE_AUTOR: "${nombreAlumno}")
+        wrappers {
+            credentialsBinding {
+                string("PSP_CHAT_ID","telegram_psp_chatId")
+                string("TELEGRAM_BOT_TOKEN","telegram_token_bot")
+            }
+            preScmSteps {
+                steps {
+                    // Comprobar si hay build previos success
+                    systemGroovyCommand ('''
+                        import jenkins.model.Jenkins
+                        import hudson.model.Environment
+                        import hudson.EnvVars
+                        // La propiedad predefinida build obtiene el build actual y con getProject se obtiene el job
+                        def job = build.getProject()
+                        def previoBuildSuccess=job.getLastSuccessfulBuild()
+                        if(previoBuildSuccess==null){
+                            println "No hubo builds success previos"
+                            def vars = [PREVIOUS_SUCCESS_BUILD: 'NO']
+                            if(build.getEnvironments() != null)
+                                build.getEnvironments().add(Environment.create(new EnvVars(vars)))
+                        } else{
+                            println "El BUILD " + previoBuildSuccess.getFullDisplayName() + " fue el último build success" 
+                        }
+                    ''')
+                }
+            }
+            timeout {
+                absolute(2)
+                writeDescription('El Build falló por exceder {0} min de timeout. Revisa el código porque es posible que haya un bucle sin fin.')
+            }
+        }
+
+        def urlDoc = "https://bitbucket.org/${idAlumno}/edu-java-psp-u03-ejercicios-1920/src/rb-${nombreAlumno}/doc/Work.md"
+        def des = readFileFromWorkspace('descripcion-ud03') + "<a href=${urlDoc}>Bitbucket</a>"
+        description(des)
+        scm {
+            git{
+                remote {
+                    name('origin')
+                    url('git@bitbucket.org:eduxunta/edu-java-psp-u03-ejercicios.git')
+                    credentials('id_SanClemente_Bitbucket_iessanclemente')
+                }
+                remote {
+                    name('alumno')
+                    url("git@bitbucket.org:${idAlumno}/edu-java-psp-u03-ejercicios-1920.git")
+                    credentials('id_SanClemente_Bitbucket_iessanclemente')
+                }
+                branch("rb-${nombreAlumno}")
+                extensions {
+                    mergeOptions {
+                        remote('origin')
+                        branch('testEj1')
+                    }
+                }
+            }
+        }
+
+        triggers {
+            pollSCM {
+                scmpoll_spec('@hourly')
+            }
+            bitbucketPush()
+        }
+        
+        steps {
+            maven {
+                goals('clean package')
+                rootPOM('ejercicio1-juegoAcertarNumero/pom.xml')
+            }
+        }
+
+        publishers {
+            postBuildScripts {
+                steps {
+                    // Enviar notificación por telegram
+                    shell('''
+                        if [ -n "$PREVIOUS_SUCCESS_BUILD" ]; then
+                                echo "Sending Telegram. Primer build success"
+                            emoji="%F0%9F%91%8F"
+                            curl -X POST "https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/sendMessage" -d "chat_id=$PSP_CHAT_ID&text=Bravo #$NOMBRE_AUTOR! He conseguido validar tu práctica satisfactoriamente! $emoji"
+                        else
+                                echo "No Sending Telegram. Ya hubo build success previos"
+                        fi
+                    ''')
+                }
+            onlyIfBuildSucceeds(true)
+            onlyIfBuildFails(false)
+            }
+        }
+    }
+}
+
+// Job Solución
+job("psp-ud03-01-0-profesor") {
+    environmentVariables(NOMBRE_AUTOR: 'Enrique')
+    wrappers {
+        credentialsBinding {
+            string("PSP_CHAT_ID","telegram_psp_chatId")
+            string("TELEGRAM_BOT_TOKEN","telegram_token_bot")
+        }
+        preScmSteps {
+            steps {
+                // Comprobar si hay build previos success
+                systemGroovyCommand ('''
+                    import jenkins.model.Jenkins
+                    import hudson.model.Environment
+                    import hudson.EnvVars
+                    // La propiedad predefinida build obtiene el build actual y con getProject se obtiene el job
+                    def job = build.getProject()
+                    def previoBuildSuccess=job.getLastSuccessfulBuild()
+                    if(previoBuildSuccess==null){
+                        println "No hubo builds success previos"
+                        def vars = [PREVIOUS_SUCCESS_BUILD: 'NO']
+                        if(build.getEnvironments() != null)
+                            build.getEnvironments().add(Environment.create(new EnvVars(vars)))
+                    } else{
+                        println "El BUILD " + previoBuildSuccess.getFullDisplayName() + " fue el último build success" 
+                    }
+                ''')
+            }
+        }
+        timeout {
+            absolute(2)
+            writeDescription('El Build falló por exceder {0} min de timeout.')
+        }
+    }
+    description("Solución del profesor")
+    scm {
+        git{
+            remote {
+                name('origin')
+                url('git@bitbucket.org:eduxunta/edu-java-psp-u03-ejercicios.git')
+                credentials('id_SanClemente_Bitbucket_iessanclemente')
+            }
+            branch("solucionEj1")
+            extensions {
+                mergeOptions {
+                    remote('origin')
+                    branch('testEj1')
+                }
+            }
+        }
+    }
+
+    triggers {
+        cron('@daily')
+        pollSCM {
+            scmpoll_spec('@hourly')
+        }
+        bitbucketPush()
+    }
+    
+    steps {
+        maven {
+            goals('clean package')
+            rootPOM('ejercicio1-juegoAcertarNumero/pom.xml')
+        }
+    }
+
+    publishers {
+
+    }
+}

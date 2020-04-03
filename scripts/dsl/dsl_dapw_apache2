@@ -1,0 +1,84 @@
+def alumnos = readFileFromWorkspace('SC1920-DAPW-alumnos')
+alumnos.eachLine { line ->
+    println 'Procesando esta línea: ' + line
+    def linea = line.split();
+    def nombreAlumno = linea[0];
+    def idAlumno = linea[1];
+
+    pipelineJob("dapw-apache2-${nombreAlumno}") {
+        environmentVariables(NOMBRE_AUTOR: "${nombreAlumno}")
+        //def urlDoc = "https://iessanclemente@bitbucket.org/${idAlumno}/edu-apache2-configuracion-1920/src/rb-${nombreAlumno}/doc/Work.md"
+        //def des = readFileFromWorkspace('descripcion-dawp-apache2') + "<a href=${urlDoc}>Bitbucket</a>"
+        //description(des)
+
+        triggers {
+            cron('@daily')
+            pollSCM {
+                scmpoll_spec('@hourly')
+            }
+            bitbucketPush()
+        }
+
+        definition {
+            cpsScm {
+                scm {
+                    git{
+                        remote {
+                            name('origin')
+                            url('git@bitbucket.org:eduxunta/edu-apache2-configuracion.git')
+                            credentials('id_SanClemente_Bitbucket_iessanclemente')
+                        }
+                        remote {
+                            name('alumno')
+                            url("git@bitbucket.org:${idAlumno}/edu-apache2-configuracion-1920.git")
+                            credentials('id_SanClemente_Bitbucket_iessanclemente')
+                        }
+                        branch("rb-${nombreAlumno}")
+                        extensions {
+                            mergeOptions {
+                                remote('origin')
+                                branch('test')
+                            }
+                        }
+                    }
+                }
+            }
+        } 
+    }
+}
+
+
+pipelineJob("dapw-apache2-profesor") {
+    environmentVariables(NOMBRE_AUTOR: 'Enrique')
+    
+    description("Solución del profesor")
+
+    triggers {
+        cron('@daily')
+        pollSCM {
+            scmpoll_spec('@hourly')
+        }
+        bitbucketPush()
+    }
+    
+	definition {
+        cpsScm {
+            scm {
+                git{
+                    remote {
+                        name('origin')
+                        url('git@bitbucket.org:eduxunta/edu-apache2-configuracion.git')
+                        credentials('id_SanClemente_Bitbucket_iessanclemente')
+                    }
+                    branch("solucion")
+                    extensions {
+                        mergeOptions {
+                            remote('origin')
+                            branch('test')
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,84 @@
+def alumnos = readFileFromWorkspace('SC1920-PSP-alumnos')
+alumnos.eachLine { line ->
+    println 'Procesando esta línea: ' + line
+    def linea = line.split();
+    def nombreAlumno = linea[0];
+    def idAlumno = linea[1];
+
+    pipelineJob("psp-ud05-01-${nombreAlumno}") {
+        environmentVariables(NOMBRE_AUTOR: "${nombreAlumno}")
+        def urlDoc = "https://iessanclemente@bitbucket.org/${idAlumno}/edu-java-psp-u05-ejercicios-1920/src/rb-${nombreAlumno}/doc/Work.md"
+        def des = readFileFromWorkspace('descripcion-ud05') + "<a href=${urlDoc}>Bitbucket</a>"
+        description(des)
+
+        triggers {
+            cron('@daily')
+            pollSCM {
+                scmpoll_spec('@hourly')
+            }
+            bitbucketPush()
+        }
+
+        definition {
+            cpsScm {
+                scm {
+                    git{
+                        remote {
+                            name('origin')
+                            url('git@bitbucket.org:eduxunta/edu-java-psp-u05-ejercicios.git')
+                            credentials('id_SanClemente_Bitbucket_iessanclemente')
+                        }
+                        remote {
+                            name('alumno')
+                            url("git@bitbucket.org:${idAlumno}/edu-java-psp-u05-ejercicios-1920.git")
+                            credentials('id_SanClemente_Bitbucket_iessanclemente')
+                        }
+                        branch("rb-${nombreAlumno}")
+                        extensions {
+                            mergeOptions {
+                                remote('origin')
+                                branch('test')
+                            }
+                        }
+                    }
+                }
+            }
+        } 
+    }
+}
+
+
+pipelineJob("psp-ud05-01-profesor") {
+    environmentVariables(NOMBRE_AUTOR: 'Enrique')
+    
+    description("Solución del profesor")
+
+    triggers {
+        cron('@daily')
+        pollSCM {
+            scmpoll_spec('@hourly')
+        }
+        bitbucketPush()
+    }
+    
+	definition {
+        cpsScm {
+            scm {
+                git{
+                    remote {
+                        name('origin')
+                        url('git@bitbucket.org:eduxunta/edu-java-psp-u05-ejercicios.git')
+                        credentials('id_SanClemente_Bitbucket_iessanclemente')
+                    }
+                    branch("solucion")
+                    extensions {
+                        mergeOptions {
+                            remote('origin')
+                            branch('test')
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
