@@ -30,12 +30,14 @@ usage: make [target]
 targets:
 
 help                       Show this help message
-jenkins-run                Start the deployments containers PRODUCTION JENKINS VERSION (Detached)
+jenkins-run                Start PRODUCTION JENKINS VERSION (Detached)
 jenkins-stop               Stop PRODUCTION JENKINS VERSION
+jenkins-enter              Execute bash inside container
 jenkins-build              Build DEMO JENKINS VERSION
 jenkins-upgrade            Pull last image jenkins (need rebuild)
-jenkins-sandbox-run        Start the deployments containers DEMO JENKINS VERSION (Detached)
+jenkins-sandbox-run        Start DEMO JENKINS VERSION (Detached)
 jenkins-sandbox-stop       Stop DEMO JENKINS VERSION
+jenkins-sandbox-enter      Execute bash inside container
 jenkins-sandbox-build      Build DEMO JENKINS VERSION
 
 ```
@@ -74,7 +76,7 @@ Credenciales:
 
 * Corrección y mejora de scripts, documentación, etc.
 * Propuesta y/o desarrollo de nuevos plugins para Jenkins
-* Sugerencias a través de [Issues](https://bitbucket.org/eduxunta/edu-devops-environment/issues)
+* Sugerencias y contribuciones gestionadas a través de [Issues](https://bitbucket.org/eduxunta/edu-devops-environment/issues)
 * Mejora de la documentación
 * Compartir el modelo con otros docentes
 * Generar nuevas propuesta de actividades para alumnos
