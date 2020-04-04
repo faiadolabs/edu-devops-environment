@@ -6,7 +6,7 @@
 
 **Montar un entorno de entrega y compartición de actividades Profesores-Alumnos con GIT y un entorno CI/CD** (para automatizar la corrección de las prácticas de los alumnos).
 
-Para esto se implementa un [esquema de compartición](wiki/Git-0-RecepcionActividadesGit.md) de actividades entre alumnos e instructor con GIT y una herramienta de integración continua como Jenkins, todo ello descrito en [la documentación](https://bitbucket.org/eduxunta/edu-devops-environment/wiki/Home).
+Para esto se implementa un [esquema de compartición](https://bitbucket.org/eduxunta/edu-devops-environment/wiki/Git-0-RecepcionActividadesGit.md) de actividades entre alumnos e instructor con GIT y una herramienta de integración continua como Jenkins, todo ello descrito en [la documentación](https://bitbucket.org/eduxunta/edu-devops-environment/wiki/Home).
 
 ## Pre-requisitos
 
