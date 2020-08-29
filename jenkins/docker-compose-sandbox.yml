@@ -12,6 +12,8 @@ services:
       - $PWD/jenkins-home-sandbox:/var/jenkins_home
       # Para emplear docker desde el container de jenkins:lts-alpine
       - /var/run/docker.sock:/var/run/docker.sock
+      - /Users/enrique/git/formacion/edu-php-introphp:/opt/introphp
+      - /Users/enrique/git/formacion/edu-docker-vsftpd:/opt/vsftpd
     networks:
       - net
   
