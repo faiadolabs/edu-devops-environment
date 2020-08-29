@@ -1,0 +1,9 @@
+#!/bin/bash
+
+pythonFile="/lib/edu-git-sync.py"
+
+dirPath="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+dirPath=$dirPath$pythonFile
+
+echo "$dirPath" "$@"
+python3 "$dirPath" "$@"
