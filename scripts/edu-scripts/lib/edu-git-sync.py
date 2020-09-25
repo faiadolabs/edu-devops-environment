@@ -1,11 +1,50 @@
 #!/usr/bin/python3
 """
-Help
+\033[95mFORMATO:\033[0m 
+    edu-git-sync <path> command options
+
+\033[95mDESCRIPCION\033[0m
+
+    El siguiente script permite tratar en lote un conjunto de repositorios GIT situados en un determinado PATH. La 
+    localización de los repositorios para un PATH dado se hará de forma recursiva.
+    Los comandos implementados hasta el momento son:
+
+\033[95mCOMANDOS:\033[0m
+
+    \033[1m repos \033[0m: 
+        Sintaxis: edu-git-sync <path> repos
+        Descripción: Dado un <path> localiza recursivamente todos los repositorios y los muestra en pantaña 
+        distinguiendo los BARE de los que tienes workings directory.
+        Parámetros: Sin paránetros.
+
+    \033[1m dirty \033[0m: 
+        Sintaxis: edu-git-sync <path> dirty
+        Descripción: Dado un <path> localiza recursivamente todos los repositorios no BARE que tienes espacios de
+        de trabajo sucio (commits pendientes). 
+        Parámetros: Sin paránetros.
+
+    \033[1m connect \033[0m: 
+        Sintaxis: edu-git-sync <path> connect <parámetros>
+        Descripción: Dado un <path> localiza recursivamente todos los repositorios no BARE y los conecta a un 
+        repositorio remoto, con una url especificada por ssh.
+        Parámetros: 
+            --host <IP|name>
+            --name <remote_rame>
+
+    \033[1m fetch \033[0m: 
+        Sintaxis: edu-git-sync <path> fetch <parámetros>
+        Descripción: Dado un <path> localiza recursivamente todos los repositorios no BARE y realiza un fetch de todas 
+        las referencias remotas o sólo aquella especificada por parámetro
+        Parámetros: 
+            [--remote <remote_name>]
+
 """
+
 import sys
-from os import walk, listdir
+from os import walk, listdir, getlogin
 from os.path import isfile, isdir, join, abspath
 
+# TODO Aviso en caso de no tener las dependencias instaladas: (pip install gitpython)
 # GitPython (https://gitpython.readthedocs.io/en/stable/intro.html)
 from git import Repo, InvalidGitRepositoryError
 from git.repo.fun import is_git_dir
@@ -87,10 +126,11 @@ def __create_remote__(repo, host, path):
 def __fetch_repos__(*repos, name_remote=None):
     for repo in repos:
         if not repo.bare:
-            print("\nRepo, fetching... ", repo.working_tree_dir)
+            print("\n" + bcolors.bold("[FECHING...] "), repo.working_tree_dir)
             remotes = repo.remotes if name_remote is None else [repo.remote(name=name_remote)]
             for un_remote in remotes:
                 try:
+                    # TODO: Necesario establecer un timeout: https://stackoverflow.com/questions/492519/timeout-on-a-function-call
                     fetch_info = un_remote.fetch()
                     print("\t", bcolors.ok("[Ok fetched]"), un_remote)
                 except Exception as e:
@@ -120,8 +160,8 @@ def __procress_parameters__():
 # MAIN COMMANDS
 #################################################
 def help_cmd(**kwargs):
-    print(bcolors.error("\nError de sintaxis. Usa:"))
-    print("\nFormat: \tedu-git-sync <path> command options\n\n")
+    print(bcolors.error("\nError de sintaxis."))
+    print(__doc__)
 
 
 def repos(print=True, **kwargs):
@@ -136,8 +176,15 @@ def dirty(**kwargs):
 
 
 def connect(**kwargs):
+
     host = kwargs["--host"] if "--host" in kwargs else None
-    cadena_conexion = "ssh://enrique@{}".format(host)
+    user = kwargs["--user"] if "--user" in kwargs else str(getlogin())
+    name = kwargs["--name"] if "--name" in kwargs else None
+    if name == None or host == None:
+        help_cmd()
+        exit()
+
+    cadena_conexion = "ssh://{}@{}".format(user, host)
     continuar = __pregunta_si_no__(pregunta="La cadena de conexión: "+ cadena_conexion + " es correcta?")
     if continuar:
         print("\n" + bcolors.header("Conectando repos...") + "\n")
@@ -145,18 +192,25 @@ def connect(**kwargs):
         for un_repo in repos(print=False):
             if not un_repo.bare:
                 remote_path = cadena_conexion + un_repo.working_tree_dir
-                remote = __create_remote__(un_repo, "pro", remote_path)
+                remote = __create_remote__(un_repo, name, remote_path)
                 if remote: num_conected += 1
         print(bcolors.BOLD + "\nConectados: {}".format(num_conected), "\n\n" + bcolors.ENDC)
     else: 
         bcolors.error("Abortando")
-        exit
+        exit()
+
+
+def fetch(print=True, **kwargs):
+    name_remote = kwargs["--remote"] if "--remote" in kwargs else None
+    if print == True: __fetch_repos__(*repos(print=False), name_remote=name_remote)
 
 # Comandos posibles
 switch_cmd = {
 	"repos": repos,
 	"dirty": dirty,
-	"connect": connect
+	"connect": connect,
+    "fetch": fetch,
+    "help": help_cmd
 }
 
 #################################################
@@ -172,6 +226,6 @@ except:
     exit()
 
 # tomamos la función asociada a la variable y la invocamos
-#switch_cmd.get(command, help_cmd)(**parametros)
+switch_cmd.get(command, help_cmd)(**parametros)
 
 
