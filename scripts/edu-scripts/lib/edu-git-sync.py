@@ -129,13 +129,13 @@ def __create_remote__(repo, name, path):
 def __repo_info_flag__(flag):
     flag_types = {
         128:bcolors.error("ERROR"),
-        64: bcolors.info("FAST_FORWARD"),
+        64: bcolors.bold("FAST_FORWARD"),
         32: bcolors.warning("FORCED_UPDATE"),
         4:  bcolors.ok("HEAD_UPTODATE"),
-        2:  bcolors.info("NEW_HEAD"),
-        1:  bcolors.info("NEW_TAG"),
+        2:  bcolors.bold("NEW_HEAD"),
+        1:  bcolors.bold("NEW_TAG"),
         16: bcolors.error("REJECTED"),
-        8:  bcolors.info("TAG_UPDATE")
+        8:  bcolors.bold("TAG_UPDATE")
     }
     return flag_types.get(flag, bcolors.warning("UNKNOW_FLAG"))
 
@@ -152,6 +152,7 @@ def __fetch_repos__(*repos, name_remote=None):
                 fetch_info = un_remote.fetch()
                 flags = 0 if len(fetch_info) == 0 else fetch_info[0].flags
                 print("\t", bcolors.ok("[Ok fetched]"), un_remote, __repo_info_flag__(flags))
+                # TODO Bug: se incremente por cada referencia a remoto y no por cada repo.
                 num_fetched += 1
             except Exception as e:
                 if e.status == 128 :
