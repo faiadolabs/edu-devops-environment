@@ -125,6 +125,21 @@ def __create_remote__(repo, name, path):
     print(bcolors.ok("[OK]: "), "Creado el remoto {} {} para {}".format(tipo, name, repo))
     return repo.create_remote(name, path)
 
+
+def __repo_info_flag__(flag):
+    flag_types = {
+        128:bcolors.error("ERROR"),
+        64: bcolors.info("FAST_FORWARD"),
+        32: bcolors.warning("FORCED_UPDATE"),
+        4:  bcolors.ok("HEAD_UPTODATE"),
+        2:  bcolors.info("NEW_HEAD"),
+        1:  bcolors.info("NEW_TAG"),
+        16: bcolors.error("REJECTED"),
+        8:  bcolors.info("TAG_UPDATE")
+    }
+    return flag_types.get(flag, bcolors.warning("UNKNOW_FLAG"))
+
+
 def __fetch_repos__(*repos, name_remote=None):
     print("\n", bcolors.header("Fetch Repositorios:"), "\n")
     num_fetched = 0
@@ -135,7 +150,8 @@ def __fetch_repos__(*repos, name_remote=None):
             try:
                 # TODO: Necesario establecer un timeout: https://stackoverflow.com/questions/492519/timeout-on-a-function-call
                 fetch_info = un_remote.fetch()
-                print("\t", bcolors.ok("[Ok fetched]"), un_remote)
+                flags = 0 if len(fetch_info) == 0 else fetch_info[0].flags
+                print("\t", bcolors.ok("[Ok fetched]"), un_remote, __repo_info_flag__(flags))
                 num_fetched += 1
             except Exception as e:
                 if e.status == 128 :
