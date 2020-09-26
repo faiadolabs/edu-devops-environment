@@ -110,7 +110,7 @@ def tipo(repo):
 def __print_repos__(repos):
     print(bcolors.HEADER + "\nRepositorios:\n" + bcolors.ENDC)
     for repo in repos:
-        print("{} {} {}".format(bcolors.info("[REPO]")), tipo(repo), repo)
+        print("{} {} {}".format(bcolors.info("[REPO]"), tipo(repo), repo))
     print(bcolors.BOLD + "\nTotal de Respos: ", len(repos), "\n\n" + bcolors.ENDC)
         
 
