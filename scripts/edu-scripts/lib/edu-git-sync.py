@@ -169,10 +169,11 @@ def __fetch_repos__(*repos, name_remote=None, path_file_remote_script=None):
                     name_host = local_host.split(".")[0].lower()
                     local_user = str(getlogin())
                     git_dir = repo.git_dir if repo.bare else repo.working_tree_dir
+                    # TODO Bug realizarlo en base a la referencia remota y no al repo actual (p.e. cuando hay varias referencias remotas no tiene sentido...)
                     clone_instruction = "git clone -o {} ssh://enrique@{}:{} {}".format(name_host, local_host, git_dir, git_dir)
                     if path_file_remote_script is not None : 
-                        with open(join(path_file_remote_script,"edu-git-sync-script.sh"), 'w') as f:
-                            f.write(clone_instruction)
+                        with open(join(path_file_remote_script,"edu-git-sync-script.sh"), 'a') as f:
+                            f.write(clone_instruction + "\n")
                         print("\t", bcolors.warning("[ADDED TO SCRIPT]"), bcolors.info(clone_instruction))
                     else:
                         print("\t", bcolors.warning("[RUN IN REMOTE]"), bcolors.info(clone_instruction))
