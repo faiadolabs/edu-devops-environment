@@ -87,23 +87,27 @@ class bcolors:
 
 
 def __search_repos__(repos, path):
-    for f in listdir(path):
-        if isdir(join(path, f)) and is_git_dir(join(path, f, ".git")):
-            # Fin recursión. Repo con Workspace
-            # print(join(f,"Sí"))
-            unRepo = Repo(join(path, f))
-            repos.append(unRepo)
-        elif isdir(join(path, f)) and is_git_dir(join(path, f)):
-            # Fin recursión. Bare Repo
-            # print(join(f,"Sí - BARE"))
-            unRepo = Repo(join(path, f))
-            # print(unRepo, "Es bare? ", unRepo.bare)
-            repos.append(unRepo)
-        elif isdir(join(path, f)) and not is_git_dir(join(path, f, ".git")): 
-            __search_repos__(repos, join(path, f))
-        else:
-            # Fin recursión
-            pass
+    try:
+        for f in listdir(path):
+            if isdir(join(path, f)) and is_git_dir(join(path, f, ".git")):
+                # Fin recursión. Repo con Workspace
+                # print(join(f,"Sí"))
+                unRepo = Repo(join(path, f))
+                repos.append(unRepo)
+            elif isdir(join(path, f)) and is_git_dir(join(path, f)):
+                # Fin recursión. Bare Repo
+                # print(join(f,"Sí - BARE"))
+                unRepo = Repo(join(path, f))
+                # print(unRepo, "Es bare? ", unRepo.bare)
+                repos.append(unRepo)
+            elif isdir(join(path, f)) and not is_git_dir(join(path, f, ".git")): 
+                __search_repos__(repos, join(path, f))
+            else:
+                # Fin recursión
+                pass
+    except  FileNotFoundError as e:
+        print("\n", bcolors.error("[ERROR]"), e.strerror)
+        exit(1)
 
 
 def tipo(repo):
@@ -166,6 +170,7 @@ def __fetch_repos__(*repos, name_remote=None, path_file_remote_script=None):
                     print("\t", bcolors.error("[ERROR fetching]"), un_remote, "does not appear to be a git repository")
                     # Sugerir cómo clonarlo
                     local_host = uname()[1]
+                    if ".local" not in local_host: local_host + ".local"
                     name_host = local_host.split(".")[0].lower()
                     local_user = str(getlogin())
                     git_dir = repo.git_dir if repo.bare else repo.working_tree_dir
@@ -228,7 +233,7 @@ def connect(**kwargs):
     name = kwargs["--name"] if "--name" in kwargs else None
     if name == None or host == None:
         help_cmd()
-        exit()
+        exit(1)
 
     cadena_conexion = "ssh://{}@{}".format(user, host)
     continuar = __pregunta_si_no__(pregunta="La cadena de conexión: "+ cadena_conexion + " es correcta?")
