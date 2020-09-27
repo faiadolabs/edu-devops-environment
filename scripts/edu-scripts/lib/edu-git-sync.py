@@ -34,9 +34,11 @@
     \033[1m fetch \033[0m: 
         Sintaxis: edu-git-sync <path> fetch <parámetros>
         Descripción: Dado un <path> localiza recursivamente todos los repositorios y realiza un fetch de todas las
-        referencias remotas o sólo aquella especificada por parámetro
+        referencias remotas o sólo aquella especificada por parámetro. También es posible que genere un script para
+        clonado rápido de todos los repos que no existen en remoto pero que sí están conectados con param '--file'
         Parámetros: 
             [--name <remote_name>]
+            [--file <path>] - Especifica un path donde creará un script para el clonado de repos en remoto
 
 """
 
@@ -140,12 +142,17 @@ def __repo_info_flag__(flag):
     return flag_types.get(flag, bcolors.warning("UNKNOW_FLAG"))
 
 
-def __fetch_repos__(*repos, name_remote=None):
+def __fetch_repos__(*repos, name_remote=None, path_file_remote_script=None):
     print("\n", bcolors.header("Fetch Repositorios:"), "\n")
     num_fetched = 0
     for repo in repos:
         print("\n" + bcolors.bold("[FECHING...]"), tipo(repo), repo.git_dir)
-        remotes = repo.remotes if name_remote is None else [repo.remote(name=name_remote)]
+        try:
+            remotes = repo.remotes if name_remote is None else [repo.remote(name=name_remote)]
+        except ValueError:
+            print("\t", bcolors.warning("[NO EXISTE EL REMOTO]"), "No existe en el repo la referencia remota {}".format(name_remote))
+            remotes = []
+
         for un_remote in remotes:
             try:
                 # TODO: Necesario establecer un timeout: https://stackoverflow.com/questions/492519/timeout-on-a-function-call
@@ -155,14 +162,20 @@ def __fetch_repos__(*repos, name_remote=None):
                 # TODO Bug: se incremente por cada referencia a remoto y no por cada repo.
                 num_fetched += 1
             except Exception as e:
-                if e.status == 128 :
+                if e.status == 128 : # El repo NO existe en remoto
                     print("\t", bcolors.error("[ERROR fetching]"), un_remote, "does not appear to be a git repository")
                     # Sugerir cómo clonarlo
                     local_host = uname()[1]
                     name_host = local_host.split(".")[0].lower()
                     local_user = str(getlogin())
                     git_dir = repo.git_dir if repo.bare else repo.working_tree_dir
-                    print("\t Clone on remote:", bcolors.info("git clone -o {} ssh://enrique@{}:{}".format(name_host, local_host, git_dir)))
+                    clone_instruction = "git clone -o {} ssh://enrique@{}:{} {}".format(name_host, local_host, git_dir, git_dir)
+                    if path_file_remote_script is not None : 
+                        with open(join(path_file_remote_script,"edu-git-sync-script.sh"), 'w') as f:
+                            f.write(clone_instruction)
+                        print("\t", bcolors.warning("[ADDED TO SCRIPT]"), bcolors.info(clone_instruction))
+                    else:
+                        print("\t", bcolors.warning("[RUN IN REMOTE]"), bcolors.info(clone_instruction))
                 else:
                     print("\t", bcolors.error("[ERROR fetching]"), un_remote, e)
     print("\n", bcolors.bold("Total: {}/{}".format(num_fetched , len(repos))), "\n\n")
@@ -235,8 +248,9 @@ def connect(**kwargs):
 
 
 def fetch(**kwargs):
-    name_remote = kwargs["--name"] if "--name" in kwargs else None
-    __fetch_repos__(*repos(print=False), name_remote=name_remote)
+    name_remote   = kwargs["--name"] if "--name" in kwargs else None
+    path_script   = kwargs["--file"] if "--file" in kwargs else None
+    __fetch_repos__(*repos(print=False), name_remote=name_remote, path_file_remote_script=path_script)
 
 # Comandos posibles
 switch_cmd = {
