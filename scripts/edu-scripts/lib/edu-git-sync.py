@@ -170,7 +170,7 @@ def __fetch_repos__(*repos, name_remote=None, path_file_remote_script=None):
                     print("\t", bcolors.error("[ERROR fetching]"), un_remote, "does not appear to be a git repository")
                     # Sugerir cómo clonarlo
                     local_host = uname()[1]
-                    if ".local" not in local_host: local_host + ".local"
+                    if ".local" not in local_host: local_host += ".local"
                     name_host = local_host.split(".")[0].lower()
                     local_user = str(getlogin())
                     git_dir = repo.git_dir if repo.bare else repo.working_tree_dir
