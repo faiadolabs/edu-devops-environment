@@ -12,7 +12,11 @@ exist_file_alumnos
 if [ "$?" -ne "0" ]; then
 	exit 1
 fi
-fileAlumnos=.git/alumnos
+if [ -n "$2" ]; then # You supplied the second parameter! Sample edu-git-remote-addAlumnos gitlab alumnosDistancia.txt
+    fileAlumnos=.git/$2
+else
+    fileAlumnos=.git/alumnos
+fi
 
 # Obtener nombre del repo
 pathname=$PWD
