@@ -1,4 +1,12 @@
 # Lista de plugins base:
+#
+# Obtenida: (https://[JENKINS-DOMAIN]/script/)
+# Jenkins.instance.pluginManager.plugins.each{
+#     plugin -> 
+#       println ("${plugin.getShortName()}: ${plugin.getVersion()}")
+# }
+
+
 workflow-multibranch: 2.22
 timestamper: 1.11.8
 credentials: 2.3.13
