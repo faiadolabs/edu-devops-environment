@@ -131,3 +131,5 @@ envinject:2.3.0
 # Permite la localización de un texto o patrón en ficheros
 text-finder:1.15
 
+# Realizar filtros personalizados de jobs. Muy últil para filtrar todos los jobs de un alumno
+hudson-pview-plugin:1.8
