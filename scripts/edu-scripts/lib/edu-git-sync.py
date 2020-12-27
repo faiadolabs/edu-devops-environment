@@ -27,9 +27,10 @@
         Sintaxis: edu-git-sync <path> connect <parámetros>
         Descripción: Dado un <path> localiza recursivamente todos los repositorios y los conecta a un  repositorio 
         remoto, con una url especificada por ssh.
-        Parámetros: 
+        Parámetros:
+            --user <username> 
             --host <IP|name>
-            --name <remote_rame>
+            --name <remote_name>
 
     \033[1m fetch \033[0m: 
         Sintaxis: edu-git-sync <path> fetch <parámetros>
