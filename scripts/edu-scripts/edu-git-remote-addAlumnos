@@ -12,17 +12,22 @@ exist_file_alumnos
 if [ "$?" -ne "0" ]; then
 	exit 1
 fi
-fileAlumnos=.git/alumnos
+if [ -n "$2" ]; then # You supplied the second parameter! Sample edu-git-remote-addAlumnos gitlab alumnosDistancia.txt
+    fileAlumnos=.git/$2
+else
+    fileAlumnos=.git/alumnos
+fi
 
 # Obtener nombre del repo
 pathname=$PWD
 dirname=$(basename $pathname)
+platform=$1
 
-while read username bitbucketAccount prefijoName sufijoRepo
+while read username platformAccount prefijoName sufijoRepo
 do
     # Hacer un trim de las cadenas (https://stackoverflow.com/a/19347380/1820838)
     username=${username//[$'\t\r\n']}
-    bitbucketAccount=${bitbucketAccount//[$'\t\r\n']}
+    platformAccount=${platformAccount//[$'\t\r\n']}
 
     prefijoName=${prefijoName//[$'\t\r\n']}
     sufijoRepo=${sufijoRepo//[$'\t\r\n']}
@@ -31,14 +36,18 @@ do
 
 	# echo "---"
     # echo "Columna1: =$username="
-	# echo "Columna2: =$bitbucketAccount="
+	# echo "Columna2: =$platformAccount="
     
 	# (TODO: problema multiples keys. https://stackoverflow.com/questions/2419566/best-way-to-use-multiple-ssh-private-keys-on-one-client) 
-    # echo "git@bitbucket.org:$bitbucketAccount/$repo"
-    # git remote add $prefijoName$username git@bitbucket.org:$bitbucketAccount/$repo
+    # echo "git@bitbucket.org:$platformAccount/$repo"
+    # git remote add $prefijoName$username git@bitbucket.org:$platformAccount/$repo
 
     echo -ne "[Creando...] remoto: $prefijoName$username \n"
-    git remote add $prefijoName$username https://iessanclemente@bitbucket.org/$bitbucketAccount/$repo
+    if [ "$platform" = "gitlab" ]; then
+        git remote add $prefijoName$username git@gitlab.iessanclemente.net:$platformAccount/$repo
+    else
+        git remote add $prefijoName$username https://iessanclemente@bitbucket.org/$platformAccount/$repo
+    fi
 
 done < "$fileAlumnos"
 
