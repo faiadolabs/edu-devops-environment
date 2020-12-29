@@ -308,7 +308,7 @@ def clone(**kwargs):
             else:
                 # Clonando repo por ssh...
                 bare_msg = bcolors.warning(" [BARE] ") if un_repo.bare else ""
-                print("\t", bcolors.info(f"[Clonando en {local_name_host}...]"), bare_msg, cmd_clone)
+                print("\t", bcolors.info(f"[Clonando en {remote_host}...]"), bare_msg, cmd_clone)
 
                 _stdin, stdout, _stderr = client.exec_command(command=cmd_clone, timeout=2)
                 cmd_code = stdout.channel.recv_exit_status()
