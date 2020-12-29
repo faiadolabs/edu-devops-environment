@@ -281,8 +281,8 @@ def clone(**kwargs):
         exit(1)
 
     import paramiko
-    with paramiko.SSHClient() as client:
-    
+    try:
+        client = paramiko.SSHClient()
         client.load_system_host_keys()
         client.connect(hostname=remote_host, password=None, timeout=2) # Only ssh keys
 
@@ -316,8 +316,10 @@ def clone(**kwargs):
                     num_cloned+= 1 
                     print("\t", bcolors.ok("[Ok Cloned]"))
                 else: print("\t", bcolors.error("[ERROR Cloning]"))
-                
         print("\n", bcolors.bold("Clonados: {}".format(num_cloned)), "\n\n")
+    finally:
+        if client: client.close()
+        
             
 
 
