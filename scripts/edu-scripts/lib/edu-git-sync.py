@@ -318,7 +318,9 @@ def clone(**kwargs):
                 else: print("\t", bcolors.error("[ERROR Cloning]"))
         print("\n", bcolors.bold("Clonados: {}".format(num_cloned)), "\n\n")
     finally:
-        if client: client.close()
+        if client: 
+            client.close()
+            del _stdin, stdout, _stderr # https://stackoverflow.com/a/61016663/1820838
         
             
 
