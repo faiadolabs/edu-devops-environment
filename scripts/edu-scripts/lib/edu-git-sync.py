@@ -41,6 +41,14 @@
             [--name <remote_name>]
             [--file <path>] - Especifica un path donde creará un script para el clonado de repos en remoto
 
+    \033[1m clone \033[0m: 
+        Sintaxis: edu-git-sync <path> clone <parámetros>
+        Descripción: Dado un <path> localiza recursivamente todos los repositorios y realiza desde un máquina remota
+        un clonado de todos estos repositorios
+        Parámetros: 
+            --remote <remote_name> - Se especifica el nombre de la máquina remota (p.e. `pro.local`)
+            --user <user> - Se especifica el nombre de usuario que establecerá la conexión ssh
+            --name <name_remote> - Se especifica el nombre de la referencia remota del repositorio origen (p.e. `pro`)
 """
 
 import sys
@@ -268,7 +276,7 @@ def clone(**kwargs):
     local_host = __obtain_local_name_host__(domain=True)
     local_name_host = __obtain_local_name_host__(domain=False)
 
-    if name == None or remote_host == None:
+    if name == None or remote_host == None or user == None:
         help_cmd()
         exit(1)
 
@@ -299,7 +307,8 @@ def clone(**kwargs):
                 print("\t", bcolors.warning("[WARNING]"), "Repo exists: ", remote_path)
             else:
                 # Clonando repo por ssh...
-                print("\t", bcolors.info(f"[CLONANDO en {local_name_host}...]"), cmd_clone)
+                bare_msg = bcolors.warning(" [BARE] ") if un_repo.bare else ""
+                print("\t", bcolors.info(f"[Clonando en {local_name_host}...]"), bare_msg, cmd_clone)
 
                 _stdin, stdout, _stderr = client.exec_command(command=cmd_clone, timeout=2)
                 cmd_code = stdout.channel.recv_exit_status()
