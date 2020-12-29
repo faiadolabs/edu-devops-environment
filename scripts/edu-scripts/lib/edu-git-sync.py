@@ -50,6 +50,7 @@ from os.path import isfile, isdir, join, abspath
 # GitPython (https://gitpython.readthedocs.io/en/stable/intro.html)
 from git import Repo, InvalidGitRepositoryError
 from git.repo.fun import is_git_dir
+from git.exc import GitCommandError
 
 #################################################
 # UTILS
@@ -146,6 +147,13 @@ def __repo_info_flag__(flag):
     return flag_types.get(flag, bcolors.warning("UNKNOW_FLAG"))
 
 
+def __obtain_local_name_host__(domain=False):
+    local_host = uname()[1]
+    if ".local" not in local_host: local_host += ".local"
+    name_host = local_host.split(".")[0].lower()
+    return local_host if domain else name_host
+
+
 def __fetch_repos__(*repos, name_remote=None, path_file_remote_script=None):
     print("\n", bcolors.header("Fetch Repositorios:"), "\n")
     num_fetched = 0
@@ -165,14 +173,12 @@ def __fetch_repos__(*repos, name_remote=None, path_file_remote_script=None):
                 print("\t", bcolors.ok("[Ok fetched]"), un_remote, __repo_info_flag__(flags))
                 # TODO Bug: se incremente por cada referencia a remoto y no por cada repo.
                 num_fetched += 1
-            except Exception as e:
+            except GitCommandError as e:
                 if e.status == 128 : # El repo NO existe en remoto
                     print("\t", bcolors.error("[ERROR fetching]"), un_remote, "does not appear to be a git repository")
                     # Sugerir cómo clonarlo
-                    local_host = uname()[1]
-                    if ".local" not in local_host: local_host += ".local"
-                    name_host = local_host.split(".")[0].lower()
-                    local_user = str(getlogin())
+                    local_host = __obtain_local_name_host__()
+                    name_host = str(getlogin())
                     git_dir = repo.git_dir if repo.bare else repo.working_tree_dir
                     # TODO Bug realizarlo en base a la referencia remota y no al repo actual (p.e. cuando hay varias referencias remotas no tiene sentido...)
                     clone_instruction = "git clone -o {} ssh://enrique@{}:{} {}".format(name_host, local_host, git_dir, git_dir)
@@ -182,8 +188,8 @@ def __fetch_repos__(*repos, name_remote=None, path_file_remote_script=None):
                         print("\t", bcolors.warning("[ADDED TO SCRIPT]"), bcolors.info(clone_instruction))
                     else:
                         print("\t", bcolors.warning("[RUN IN REMOTE]"), bcolors.info(clone_instruction))
-                else:
-                    print("\t", bcolors.error("[ERROR fetching]"), un_remote, e)
+            except Exception as e:
+                print("\t", bcolors.error("[ERROR fetching]"), un_remote, e)
     print("\n", bcolors.bold("Total: {}/{}".format(num_fetched , len(repos))), "\n\n")
 
     
@@ -253,6 +259,58 @@ def connect(**kwargs):
         exit()
 
 
+def clone(**kwargs):
+    # edu-git-sync . clone --host macario.local --user enrique --name macario
+    remote_host = kwargs["--remote"] if "--remote" in kwargs else None
+    user = kwargs["--user"] if "--user" in kwargs else str(getlogin())
+    name = kwargs["--name"] if "--name" in kwargs else None
+    local_host = __obtain_local_name_host__(domain=True)
+    local_name_host = __obtain_local_name_host__(domain=False)
+
+    if name == None or remote_host == None:
+        help_cmd()
+        exit(1)
+
+    import paramiko
+    with paramiko.SSHClient() as client:
+    
+        client.load_system_host_keys()
+        client.connect(hostname=remote_host, password=None, timeout=2) # Only ssh keys
+
+        print("\n" + bcolors.header("Clonando repos...") + "\n")
+        num_cloned = 0
+        remote_conexion = "ssh://{}@{}".format(user, local_host)
+
+        for un_repo in repos(print=False):
+            if not un_repo.bare:
+                local_ssh_path = f"{remote_conexion}:{un_repo.working_tree_dir}"
+                remote_path = un_repo.working_tree_dir
+                cmd_clone = f"git clone -o {local_name_host} {local_ssh_path} {remote_path}"
+            elif un_repo.bare:
+                local_ssh_path = remote_conexion + un_repo.git_dir
+                remote_path = un_repo.git_dir
+                cmd_clone = f"git clone --mirror {local_ssh_path} {remote_path}"
+
+            # Comprobando si el repo ya existe
+            _stdin, stdout, _stderr = client.exec_command(command=f'[ -d {remote_path} ]', timeout=2)
+            cmd_code = stdout.channel.recv_exit_status()
+            if(cmd_code == 0):
+                print("\t", bcolors.warning("[WARNING]"), "Repo exists: ", remote_path)
+            else:
+                # Clonando repo por ssh...
+                print("\t", bcolors.info(f"[CLONANDO en {local_name_host}...]"), cmd_clone)
+
+                _stdin, stdout, _stderr = client.exec_command(command=cmd_clone, timeout=2)
+                cmd_code = stdout.channel.recv_exit_status()
+                if(cmd_code == 0): 
+                    num_cloned+= 1 
+                    print("\t", bcolors.ok("[Ok Cloned]"))
+                else: print("\t", bcolors.error("[ERROR Cloning]"))
+                
+        print("\n", bcolors.bold("Clonados: {}".format(num_cloned)), "\n\n")
+            
+
+
 def fetch(**kwargs):
     name_remote   = kwargs["--name"] if "--name" in kwargs else None
     path_script   = kwargs["--file"] if "--file" in kwargs else None
@@ -264,6 +322,7 @@ switch_cmd = {
 	"dirty": dirty,
 	"connect": connect,
     "fetch": fetch,
+    "clone": clone,
     "help": help_cmd
 }
 
