@@ -1,3 +1,7 @@
 # Se excluye data del jenkins-home
 jenkins-home*/
-**/.vscode
+
+# VS Code. Quiero meter explícitamente en el repo estos dos ficheros:
+.vscode/**
+!.vscode/extensions.json
+!.vscode/launch.json

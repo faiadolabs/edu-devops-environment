@@ -1,0 +1,57 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Python: edu-git-sync /tmp/pruebas-sync connect --host pro.local --user enrique --name pro",
+            "type": "python",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal",
+            "args": [
+                "/tmp/pruebas-sync",
+                "connect",
+                "--host",
+                "pro.local",
+                "--user",
+                "enrique",
+                "--name",
+                "pro"
+            ]
+        },
+
+        {
+            "name": "Python: edu-git-sync /tmp/pruebas-sync fetch --name pro",
+            "type": "python",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal",
+            "args": [
+                "/tmp/pruebas-sync",
+                "fetch",
+                "--name",
+                "pro"
+            ]
+        },
+
+        {
+            "name": "Python: edu-git-sync /tmp/pruebas-sync clone --remote pro.local --user enrique --name pro",
+            "type": "python",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal",
+            "args": [
+                "/tmp/pruebas-sync",
+                "clone",
+                "--remote",
+                "pro.local",
+                "--user",
+                "enrique",
+                "--name",
+                "pro"
+            ]
+        },
+    ]
+}
