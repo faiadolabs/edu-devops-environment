@@ -269,7 +269,6 @@ def connect(**kwargs):
 
 
 def clone(**kwargs):
-    # edu-git-sync . clone --host macario.local --user enrique --name macario
     remote_host = kwargs["--remote"] if "--remote" in kwargs else None
     user = kwargs["--user"] if "--user" in kwargs else str(getlogin())
     name = kwargs["--name"] if "--name" in kwargs else None
@@ -329,8 +328,10 @@ def clone(**kwargs):
     finally:
         if client: 
             client.close()
-            if _stdin or stdout or _stderr:
+            try:
                 del _stdin, stdout, _stderr # https://stackoverflow.com/a/61016663/1820838
+            except UnboundLocalError:
+                pass #Evita que no haya sido previamente declaradas (referenced before assignment)
         
             
 
