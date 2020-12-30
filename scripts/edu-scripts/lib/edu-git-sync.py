@@ -317,6 +317,15 @@ def clone(**kwargs):
                     print("\t", bcolors.ok("[Ok Cloned]"))
                 else: print("\t", bcolors.error("[ERROR Cloning]"))
         print("\n", bcolors.bold("Clonados: {}".format(num_cloned)), "\n\n")
+        
+    except paramiko.ssh_exception.BadHostKeyException as e:
+        print(bcolors.error("[ERROR]"), f" The server’s host key could not be verified: {str(e)}")
+    except paramiko.ssh_exception.AuthenticationException as e:
+        print(bcolors.error("[ERROR]"), f" Authentication failed: {str(e)}")
+    except paramiko.ssh_exception.SSHException as e:
+        print(bcolors.error("[ERROR]"), f" Error connecting or establishing an SSH session: {str(e)}")
+    except Exception as e:
+        print(bcolors.error("[ERROR]"), f" Ocurrió un error inesperado: {str(e)}")
     finally:
         if client: 
             client.close()
