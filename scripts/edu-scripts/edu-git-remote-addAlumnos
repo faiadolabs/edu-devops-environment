@@ -44,7 +44,7 @@ do
 
     echo -ne "[Creando...] remoto: $prefijoName$username \n"
     if [ "$platform" = "gitlab" ]; then
-        git remote add $prefijoName$username git@gitlab.iessanclemente.net:$platformAccount/$repo
+        git remote add $prefijoName$username ssh://git@gitlab.iessanclemente.net:60600/$platformAccount/$repo
     else
         git remote add $prefijoName$username https://iessanclemente@bitbucket.org/$platformAccount/$repo
     fi
