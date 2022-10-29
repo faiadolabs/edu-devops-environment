@@ -54,6 +54,7 @@
 import sys
 from os import walk, listdir, getlogin, uname
 from os.path import isfile, isdir, join, abspath
+print("Python" + sys.version)
 
 # TODO Aviso en caso de no tener las dependencias instaladas: (pip install gitpython)
 # GitPython (https://gitpython.readthedocs.io/en/stable/intro.html)
