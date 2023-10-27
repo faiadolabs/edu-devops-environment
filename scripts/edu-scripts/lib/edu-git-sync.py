@@ -48,7 +48,7 @@
         Parámetros: 
             --remote <remote_name> - Se especifica el nombre de la máquina remota (p.e. `pro.local`)
             --user <user> - Se especifica el nombre de usuario que establecerá la conexión ssh
-            --name <name_remote> - Se especifica el nombre de la referencia remota del repositorio origen (p.e. `pro`)
+            --name <name_remote> - Se especifica el nombre de la referencia remota del repositorio origen (p.e. `macario`)
 """
 
 import sys
@@ -191,8 +191,9 @@ def __fetch_repos__(*repos, name_remote=None, path_file_remote_script=None):
                     name_host = str(getlogin())
                     git_dir = repo.git_dir if repo.bare else repo.working_tree_dir
                     # TODO Bug realizarlo en base a la referencia remota y no al repo actual (p.e. cuando hay varias referencias remotas no tiene sentido...)
-                    clone_instruction = "git clone -o {} ssh://enrique@{}:{} {}".format(name_host, local_host, git_dir, git_dir)
+                    clone_instruction = "git clone -o {} ssh://enrique@{}:{} {}".format(local_host, local_host, git_dir, git_dir)
                     if path_file_remote_script is not None : 
+                        print(join(path_file_remote_script,"edu-git-sync-script.sh"))
                         with open(join(path_file_remote_script,"edu-git-sync-script.sh"), 'a') as f:
                             f.write(clone_instruction + "\n")
                         print("\t", bcolors.warning("[ADDED TO SCRIPT]"), bcolors.info(clone_instruction))
@@ -325,7 +326,7 @@ def clone(**kwargs):
     except paramiko.ssh_exception.SSHException as e:
         print(bcolors.error("[ERROR]"), f" Error connecting or establishing an SSH session: {str(e)}")
     except Exception as e:
-        print(bcolors.error("[ERROR]"), f" Ocurrió un error inesperado: {str(e)}")
+        print(bcolors.error("[ERROR]"), f" Ocurrió un error inesperado: {str(e.args)}")
     finally:
         if client: 
             client.close()
